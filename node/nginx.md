@@ -13,3 +13,21 @@ Nginx是一款轻量级的HTTP服务器，采用事件驱动的异步非阻塞�
 * 免费使用可以商业化：Nginx为开源软件，采用的是2-clause BSD-like协议，可以免费使用，并且可以用于商业。
 
 * 配置文件简单：网络和程序配置通俗易懂，即使非专业运维也能看懂。
+
+###  用yum进行安装必要程序
+
+```
+yum -y install gcc gcc-c++ autoconf pcre-devel make automake
+yum -y install wget httpd-tools vim
+
+```
+
+### Nginx版本说明
+
+* Mainline version ：开发版,主要是给广大Nginx爱好者，测试、研究和学习的，但是不建议使用于生产环境。
+
+* Stable version : 稳定版,也就是我们说的长期更新版本。这种版本一般比较成熟，经过长时间的更新测试，所以这种版本也是主流版本。
+
+* legacy version : 历史版本，如果你需要以前的版本，Nginx也是有提供的。
+
+
