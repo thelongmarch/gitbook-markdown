@@ -30,4 +30,65 @@ yum -y install wget httpd-tools vim
 
 * legacy version : 历史版本，如果你需要以前的版本，Nginx也是有提供的。
 
+### 基于Yum的方式安装Nginx
+
+1. 查看yum是否已经存在，命令如下：
+
+```
+yum list | grep nginx
+
+```
+如果出现类似下面的内容，说明yum源是存在的
+![yum 源](http://qiniu.themarch.cn/nginxgrep.png  ''yum 源'')
+
+(原来的源只支持1.1.12版本，版本有些低)
+
+不存在：
+![yum 源](http://qiniu.themarch.cn/nginx.png  ''yum 源'')
+
+2. 如果不存在，或者不是你需要的版本，那我们可以自行配置yum源，下面是官网提供的源，我们可以放心大胆的使用。
+
+```
+[nginx]
+name=nginx repo
+baseurl=http://nginx.org/packages/OS/OSRELEASE/$basearch/
+gpgcheck=0
+enabled=1
+```
+复制上面的代码，然后在终端里输入：
+```
+vim /etc/yum.repos.d/nginx.repo
+```
+
+然后把代码复制进去。
+
+赋值完成后，你需要修改一下对应的操作系统和版本号，因为我的是centos和7的版本，所以改为这样。
+```
+baseurl=http://nginx.org/packages/centos/7/$basearch/
+```
+你可以根据你的系统或需要的版本进行修改。
+
+更新了yum源之后：
+![yum 源](http://qiniu.themarch.cn/yumyuan.png  ''yum 源'')
+
+tip:官网源地址
+![源地址](http://qiniu.themarch.cn/yuan.png  ''源地址'')
+
+
+3. 如果都已经准备好了，那就可以开始安装了，安装的命令非常简单：
+```
+yum install nginx
+```
+4. 安装完成后可以使用命令，来检测Nginx的版本。
+```
+nginx -v
+```
+如果出现下面图片的内容，说明Nginx就安装成功了。
+![版本](http://qiniu.themarch.cn/nginxversion.png  ''版本'')
+
+tip:区别与nginx -V（大写），此命令用于查看所有命令
+
+### Nginx基本配
+
+
 
