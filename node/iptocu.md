@@ -1,4 +1,18 @@
 
+
+netmask -c 36.96.0.0:36.223.255.255
+
+
+32 位整数→做异或→取反→查表→解决
+
+https://cloud.tencent.com/developer/ask/187657
+
+# 在线工具ip--cidr
+
+https://ip2cidr.com/
+
+https://ip2cidr.com/bulk-ip-to-cidr-converter.php
+
 # netmaks
 
 1、netmask的安装：
