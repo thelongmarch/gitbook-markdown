@@ -522,7 +522,7 @@ VMware 虚拟机下Centos7无法访问指定端口
 
 添加
 
-firewall-cmd --zone=public --add-port=5005/tcp --permanent   （--permanent永久生效，没有此参数重启后失效）
+firewall-cmd --zone=public --add-port=8080/tcp --permanent   （--permanent永久生效，没有此参数重启后失效）
 
 添加端口外部访问权限（这样外部才能访问）
 firewall-cmd --add-port=5005/tcp
@@ -535,31 +535,118 @@ firewall-cmd --reload
 
 https://blog.csdn.net/Honnyee/article/details/81535464
 
+
+### 解决Nginx出现403 forbidden 报错的四种方法:
+
+一、由于启动用户和nginx工作用户不一致所致
+
+1.1查看nginx的启动用户，发现是nobody，而为是用root启动的
+
+命令：ps aux | grep "nginx: worker process" | awk'{print $1}'
+
+
+1.2将nginx.config的user改为和启动用户一致，
+
+命令：vi conf/nginx.conf
+
+二、缺少index.html或者index.php文件，就是配置文件中index index.html index.htm这行中的指定的文件。
+
+三、权限问题，如果nginx没有web目录的操作权限，也会出现403错误。
+
+解决办法：修改web目录的读写权限，或者是把nginx的启动用户改成目录的所属用户，重启Nginx即可解决
+
+1. chmod -R 777 /data
+
+2. chmod -R 777 /data/www/
+
+四、SELinux设置为开启状态（enabled）的原因。
+
+
+
+
 # 第08节：Nginx使用域名
 
 先要对域名进行解析，这样域名才能正确定位到你需要的IP上。 我这里新建了两个解析，分别是:
 
-nginx.jspang.com :这个域名映射到默认的Nginx首页位置。
-nginx2.jspang.com : 这个域名映射到原来的8001端口的位置。
+nginx.demo.com :这个域名映射到默认的Nginx首页位置。
+nginx2.demo.com : 这个域名映射到原来的8001端口的位置。
 配置以域名为划分的虚拟主机
 
 我们修改etc/nginx/conf.d目录下的default.conf 文件，把原来的80端口虚拟主机改为以域名划分的虚拟主机。代码如下：
-
+```
 server {
     listen       80;
-    server_name  nginx.jspang.com;
-我们再把同目录下的8001.conf文件进行修改，改成如下：
+    server_name  nginx.demo.com;
+```
+我们再把同目录下的8080.conf文件进行修改，改成如下：
+```
+server{
+        listen 80;
+        server_name nginx2.demo.com;
+        location / {
+                root /usr/share/nginx/html/html8080;
+                index index.html index.htm;
+        }
+}
+```
+然后我们用平滑重启的方式，进行重启，这时候我们在浏览器中访问这两个网页。
 
+其实域名设置虚拟主机也非常简单，主要操作的是配置文件的server_name项，还需要域名解析的配合。
+
+第09节：Nginx反向代理的设置
+
+我们现在的web模式基本的都是标准的CS结构，即Client端到Server端。那代理就是在Client端和Server端之间增加一个提供特定功能的服务器，这个服务器就是我们说的代理服务器。
+
+**正向代理：**如果你觉的反向代理不好理解，那先来了解一下正向代理。我相信作为一个手速远超正常人的程序员来说，你一定用过翻墙工具（我这里说的不是物理梯子），它就是一个典型的正向代理工具。它会把我们不让访问的服务器的网页请求，代理到一个可以访问该网站的代理服务器上来，一般叫做proxy服务器，再转发给客户。我还是画张图帮助大家理解吧。
+
+
+![正向代理](http://qiniu.themarch.cn/zheng.png  ''正向代理'')
+
+
+简单来说就是你想访问目标服务器的权限，但是没有权限。这时候代理服务器有权限访问服务器，并且你有访问代理服务器的权限，这时候你就可以通过访问代理服务器，代理服务器访问真实服务器，把内容给你呈现出来。
+
+**反向代理：**反向代理跟代理正好相反（需要说明的是，现在基本所有的大型网站的页面都是用了反向代理），客户端发送的请求，想要访问server服务器上的内容。发送的内容被发送到代理服务器上，这个代理服务器再把请求发送到自己设置好的内部服务器上，而用户真实想获得的内容就在这些设置好的服务器上。
+
+![反向代理](http://qiniu.themarch.cn/fan.png  ''反向代理'')
+
+通过图片的对比，应该看出一些区别，这里proxy服务器代理的并不是客户端，而是服务器,即向外部客户端提供了一个统一的代理入口，客户端的请求都要先经过这个proxy服务器。具体访问那个服务器server是由Nginx来控制的。再简单点来讲，一般代理指代理的客户端，反向代理是代理的服务器。
+
+### 反向代理的用途和好处
+
+安全性：正向代理的客户端能够在隐藏自身信息的同时访问任意网站，这个给网络安全代理了极大的威胁。因此，我们必须把服务器保护起来，使用反向代理客户端用户只能通过外来网来访问代理服务器，并且用户并不知道自己访问的真实服务器是那一台，可以很好的提供安全保护。
+
+功能性：反向代理的主要用途是为多个服务器提供负债均衡、缓存等功能。负载均衡就是一个网站的内容被部署在若干服务器上，可以把这些机子看成一个集群，那Nginx可以将接收到的客户端请求“均匀地”分配到这个集群中所有的服务器上，从而实现服务器压力的平均分配，也叫负载均衡。
+
+最简单的反向代理
+
+现在我们要访问http://nginx2.demo.com然后反向代理到baidu.com这个网站。我们直接到etc/nginx/con.d/8080.conf进行修改。
+
+修改后的配置文件如下：
+```
 server{
         listen 80;
         server_name nginx2.jspang.com;
         location / {
-                root /usr/share/nginx/html/html8001;
-                index index.html index.htm;
+               proxy_pass http://www.baidu.com;
         }
 }
-然后我们用平滑重启的方式，进行重启，这时候我们在浏览器中访问这两个网页。
+```
+一般我们反向代理的都是一个IP，但是我这里代理了一个域名也是可以的。其实这时候我们反向代理就算成功了，我们可以在浏览器中打开http://nginx2.demo.com来测试一下。
 
-其实域名设置虚拟主机也非常简单，主要操作的是配置文件的server_name项，还需要域名解析的配合。
+
+
+###　反向代理还有些常用的指令：
+
+* proxy_set_header :在将客户端请求发送给后端服务器之前，更改来自客户端的请求头信息。
+
+* proxy_connect_timeout:配置Nginx与后端代理服务器尝试建立连接的超时时间。
+
+* proxy_read_timeout : 配置Nginx向后端服务器组发出read请求后，等待相应的超时时间。
+
+* proxy_send_timeout：配置Nginx向后端服务器组发出write请求后，等待相应的超时时间。
+ 
+* proxy_redirect :用于修改后端服务器返回的响应头中的Location和Refresh。
+
+
 
 
