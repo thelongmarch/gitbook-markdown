@@ -647,6 +647,87 @@ server{
  
 * proxy_redirect :用于修改后端服务器返回的响应头中的Location和Refresh。
 
+# 第10节：Nginx适配PC或移动设备
 
+### $http_user_agent的使用：
+
+Nginx通过内置变量$http_user_agent，可以获取到请求客户端的userAgent，就可以用户目前处于移动端还是PC端，进而展示不同的页面给用户。
+
+操作步骤如下：
+
+在/usr/share/nginx/目录下新建两个文件夹，分别为：pc和mobile目录
+```
+cd /usr/share/nginx
+mkdir pc
+mkdir mobile
+```
+在pc和miblic目录下，新建两个index.html文件，文件里下面内容
+```
+<h1>I am pc!</h1>
+```
+
+```
+<h1>I am mobile!</h1>
+```
+进入etc/nginx/conf.d目录下，修改8001.conf文件，改为下面的形式:
+
+```
+server{
+        listen 8080;
+        server_name localhost;
+        location / {
+         root /usr/share/nginx/pc;
+         if ($http_user_agent ~* '(Android|webOS|iPhone|iPod|BlackBerry)') {
+            root /usr/share/nginx/mobile;
+         }
+         index index.html;
+        }
+}
+```
+
+
+# 第11节：Nginx的Gzip压缩配置
+
+
+![gzip](http://qiniu.themarch.cn/gzip.png  ''gzip'')
+
+
+从上图可以清楚的明白，gzip是需要服务器和浏览器同事支持的。当浏览器支持gzip压缩时，会在请求消息中包含Accept-Encoding:gzip,这样Nginx就会向浏览器发送听过gzip后的内容，同时在相应信息头中加入Content-Encoding:gzip，声明这是gzip后的内容，告知浏览器要先解压后才能解析输出。
+
+gzip的配置项:
+
+Nginx提供了专门的gzip模块，并且模块中的指令非常丰富。
+
+gzip : 该指令用于开启或 关闭gzip模块。
+gzip_buffers : 设置系统获取几个单位的缓存用于存储gzip的压缩结果数据流。
+gzip_comp_level : gzip压缩比，压缩级别是1-9，1的压缩级别最低，9的压缩级别最高。压缩级别越高压缩率越大，压缩时间越长。
+gzip_disable : 可以通过该指令对一些特定的User-Agent不使用压缩功能。
+gzip_min_length:设置允许压缩的页面最小字节数，页面字节数从相应消息头的Content-length中进行获取。
+gzip_http_version：识别HTTP协议版本，其值可以是1.1.或1.0.
+gzip_proxied : 用于设置启用或禁用从代理服务器上收到相应内容gzip压缩。
+gzip_vary : 用于在响应消息头中添加Vary：Accept-Encoding,使代理服务器根据请求头中的Accept-Encoding识别是否启用gzip压缩。
+
+gzip最简单的配置(nginx.conf):
+```
+http {
+   .....
+    gzip on;
+    gzip_types text/plain application/javascript text/css;
+   .....
+}
+```
+gzip on是启用gizp模块，下面的一行是用于在客户端访问网页时，对文本、JavaScript 和CSS文件进行压缩输出。
+
+配置好后，我们就可以重启Nginx服务，让我们的gizp生效了。
+
+如果你是windows操作系统，你可以按F12键打开开发者工具，单机当前的请求，在标签中选择Headers，查看HTTP响应头信息。你可以清楚的看见Content-Encoding为gzip类型。
+
+![gzipon](http://qiniu.themarch.cn/gzipon.png  ''gzipon'')
+
+# 链接
+
+tengine：  http://tengine.taobao.org/
+
+网页GZIP压缩检测： http://tool.chinaz.com/Gzips/
 
 
