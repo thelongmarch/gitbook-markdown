@@ -29,7 +29,7 @@ $ node_modules/.bin/mocha --version
 npx 就是想解决这个问题，让项目内部安装的模块用起来更方便，只要像下面这样调用就行了。
 
 ```
-$ npx mocha --version
+$ npx mocha -V
 
 ```
 npx 的原理很简单，就是运行的时候，会到 node_modules/.bin 路径和环境变量 $PATH 里面，检查命令是否存在。
