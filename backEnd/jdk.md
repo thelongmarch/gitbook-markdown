@@ -19,3 +19,30 @@
 5. 测试
 
 cmd中，分别输入"java -version"、"javac"
+
+
+### 配置git提交名字和邮箱
+
+```
+git config --global user.name "姓名中文" 
+git config --global user.email "姓名全拼小写@jsti.com"
+
+```
+
+查看
+```
+git config -l
+```
+1. 个人
+
+user.email=themarch@163.com
+
+user.name=thelongmarch
+
+
+
+2. 公司
+
+user.email=jsti_ccz@jsti.com
+user.name=陈长征
+
